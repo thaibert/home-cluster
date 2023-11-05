@@ -1,0 +1,84 @@
+# See also
+# https://puckpuck.com/2020/07/17/conquering-dns-in-a-kubernetes-homelab/
+# https://github.com/puckpuck/helm-charts/tree/main/charts/powerdns
+
+
+### PowerDNS
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: powerdns
+  namespace: dns-local
+spec:
+  releaseName: powerdns
+  chart:
+    spec:
+      chart: powerdns
+#      version:
+      sourceRef:
+        kind: HelmRepository
+        name: puckpuck
+  interval: 5m
+  values:
+    powerdns:
+      initDomains:
+      - k8s.thaibert.com
+      api:
+        key: dummy_api_key
+    mariadb:
+      enabled: true
+      rootUser:
+        password: powerdns
+      db:
+        name: powerdns
+        user: powerdns
+        password: powerdns
+    replicaCount: 1
+    service:
+      type: LoadBalancer
+      annotations:
+        kube-vip.io/loadbalancerIPs: 10.1.1.1
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: puckpuck
+  namespace: dns-local
+spec:
+  interval: 30m
+  url: https://puckpuck.github.io/helm-charts
+---
+
+### external-dns
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: external-dns
+  namespace: dns-local
+spec:
+  releaseName: external-dns
+  chart:
+    spec:
+      chart: external-dns
+#      version:
+      sourceRef:
+        kind: HelmRepository
+        name: external-dns
+  interval: 5m
+  values:
+    sources:
+    - service
+    provider: pdns
+    interval: 30s
+    extraArgs:
+    - "--pdns-server=http://powerdns-api:8081"
+    - "--pdns-api-key=dummy_api_key"
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: external-dns
+  namespace: dns-local
+spec:
+  interval: 30m
+  url: https://kubernetes-sigs.github.io/external-dns/
