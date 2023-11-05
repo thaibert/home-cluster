@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: nvidia-device-plugin
+  namespace: nvidia-device-plugin
+spec:
+  releaseName: nvidia-device-plugin
+  chart:
+    spec:
+      chart: nvidia-device-plugin
+      version: v0.14.0
+      sourceRef:
+        kind: HelmRepository
+        name: nvdp
+  interval: 5m
+  values:
+    nodeSelector:
+      accelerator: nvidia-turing-t400
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: nvdp
+  namespace: nvidia-device-plugin
+spec:
+  interval: 30m
+  url: https://nvidia.github.io/k8s-device-plugin
