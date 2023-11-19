@@ -25,6 +25,22 @@ spec:
       defaultDataLocality: strict-local
 
 ---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn-dashboard
+  namespace: longhorn-system
+spec:
+  entryPoints:
+  - intweb
+  - intwebsecure
+  routes:
+  - match: "Host(`longhorn.k8s.thaibert.com`)"
+    kind: Rule
+    services:
+      - name: longhorn-frontend
+        port: 80
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
