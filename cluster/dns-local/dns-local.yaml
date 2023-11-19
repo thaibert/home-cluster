@@ -74,7 +74,7 @@ spec:
     extraArgs:
     - "--pdns-server=http://powerdns-api:8081"
     - "--pdns-api-key=dummy_api_key"
-    - "--txt-prefix=external-dns"  # https://github.com/kubernetes-sigs/external-dns/issues/262
+    - "--txt-prefix=external-dns."  # https://github.com/kubernetes-sigs/external-dns/issues/262
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
