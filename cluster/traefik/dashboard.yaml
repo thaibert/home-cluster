@@ -8,12 +8,7 @@ spec:
   - intweb
   - intwebsecure
   routes:
-  - match: "Host(`traefik.k8s.thaibert.com`) && PathPrefix(`/dashboard`)"
-    kind: Rule
-    services:
-      - name: "api@internal"
-        kind: TraefikService
-  - match: "Host(`traefik.k8s.thaibert.com`) && PathPrefix(`/api`)"
+  - match: "Host(`traefik.k8s.thaibert.com`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
     kind: Rule
     services:
       - name: "api@internal"
