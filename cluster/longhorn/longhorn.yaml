@@ -16,12 +16,12 @@ spec:
   values:
     # https://github.com/longhorn/charts/blob/v1.5.x/charts/longhorn/values.yaml
     persistence:
-      defaultClassReplicaCount: 2
+      defaultClassReplicaCount: 1
       defaultDataLocality: strict-local
     defaultSettings:
       # Settings in longhorn-ui. (Only applies to fresh install; to change, edit directly in longhorn-ui).
       createDefaultDiskLabeledNodes: true
-      defaultReplicaCount: 2
+      defaultReplicaCount: 1
       defaultDataLocality: strict-local
 
 ---
