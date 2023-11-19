@@ -57,6 +57,18 @@ spec:
         exposedPort: 7443
         protocol: TCP
 
+      port7359udp:
+        port: 7359
+        expose: true
+        exposedPort: 7359
+        protocol: UDP
+
+      port8096tcp:
+        port: 8096
+        expose: true
+        exposedPort: 8096
+        protocol: TCP
+
     ingressRoute:
       dashboard:
         enabled: false

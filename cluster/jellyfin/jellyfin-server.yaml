@@ -44,9 +44,8 @@ spec:
 
     service:
       main:
-        type: LoadBalancer
         ports:
-          http: # TODO: deprecate this
+          http: # TODO: deprecate the http-only port 8096
             port: 8096
             enabled: true
           https:
@@ -124,20 +123,22 @@ spec:
 
 
 ---
-# TODO: replace with ingressroute?
-apiVersion: v1
-kind: Service
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
 metadata:
   name: jellyfin-server-client-discovery-local-network
   namespace: jellyfin
+  annotations:
+    external-dns.alpha.kubernetes.io/target: traefik.k8s.thaibert.com
 spec:
-  selector:
-    app.kubernetes.io/instance: jellyfin-server
-  ports:
-    - protocol: UDP
-      port: 7359
-      targetPort: 7359
-  type: LoadBalancer
+  entryPoints:
+  - port7359udp
+  routes:
+  - match: "Host(`jellyfin.k8s.thaibert.com`)"
+    kind: Rule
+    services:
+      - name: jellyfin-server
+        port: 7359
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -150,6 +151,7 @@ spec:
   entryPoints:
   - intweb
   - intwebsecure
+  - port8096tcp
   routes:
   - match: "Host(`jellyfin.k8s.thaibert.com`)"
     kind: Rule
