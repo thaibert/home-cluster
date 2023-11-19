@@ -34,39 +34,46 @@ spec:
     ports:
       # Traefik `entrypoints` are defined here
       # NB: Entrypoint names can be at most 15 characters
+      
+      # `exposedPort` is the port that the LoadBalancer service exposes (which will be available on the network outside k8s).
+      # `port` is the port inside the container that traefik will listen on.
+      # `containerPort` (defaults to `port` if missing) is the port that the pod exposes.
+
       web: null
       websecure: null
 
       intweb:
-        # port: 8000
-        expose: true
+        port: 8080
         exposedPort: 80
+        expose: true
         protocol: TCP
-        tls:
-          enabled: false
 
       intwebsecure:
-        # port: 8443
-        expose: true
+        port: 8443
         exposedPort: 443
+        expose: true
         protocol: TCP
+        tls:
+          enabled: true
 
       extwebsecure:
-        # port: 7443
+        port: 9443
+        exposedPort: 9443
         expose: false # TODO
-        exposedPort: 7443
         protocol: TCP
+        tls:
+          enabled: true
 
       port7359udp:
-        # port: 7359
-        expose: true
+        port: 7359
         exposedPort: 7359
+        expose: true
         protocol: UDP
 
       port8096tcp:
-        # port: 8096
-        expose: true
+        port: 8096
         exposedPort: 8096
+        expose: true
         protocol: TCP
 
     ingressRoute:
