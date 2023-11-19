@@ -28,7 +28,7 @@ spec:
           enabled: true  # Allow external-dns to pick up annotations from IngressRoute objects
     logs:
       general:
-        level: INFO
+        level: DEBUG
       access:
         enabled: true
     ports:
