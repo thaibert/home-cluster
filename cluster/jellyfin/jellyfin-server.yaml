@@ -124,7 +124,7 @@ spec:
 
 ---
 apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
+kind: IngressRouteUDP
 metadata:
   name: jellyfin-server-client-discovery-local-network
   namespace: jellyfin
@@ -134,9 +134,7 @@ spec:
   entryPoints:
   - port7359udp
   routes:
-  - match: "Host(`jellyfin.k8s.thaibert.com`)"
-    kind: Rule
-    services:
+  - services:
       - name: jellyfin-server
         port: 7359
 ---
