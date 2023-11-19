@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: traefik
-  interval: 5m
+  interval: 1m
   values:
 # https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
     image:
