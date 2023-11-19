@@ -24,25 +24,24 @@ spec:
         external-dns.alpha.kubernetes.io/hostname: traefik.k8s.thaibert.com
     ports:
       # Traefik `entrypoints` are defined here
+      # NB: Entrypoint names can be at most 15 characters
       web: null
       websecure: null
-      internalweb:
+
+      intweb:
         port: 8000
         expose: true
         exposedPort: 80
         protocol: TCP
-      internalwebsecure:
+
+      intwebsecure:
         port: 8443
         expose: true
         exposedPort: 443
         protocol: TCP
-      externalweb:
-        port: 9000
-        expose: false # TODO
-        exposedPort: 7080
-        protocol: TCP
-      externalwebsecure:
-        port: 9443
+
+      extwebsecure:
+        port: 7443
         expose: false # TODO
         exposedPort: 7443
         protocol: TCP

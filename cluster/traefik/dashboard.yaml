@@ -5,8 +5,8 @@ metadata:
   namespace: traefik
 spec:
   entryPoints:
-  - internalweb
-  - internalwebsecure
+  - intweb
+  - intwebsecure
   routes:
   - match: "Host(`traefik.k8s.thaibert.com`) && PathPrefix(`/dashboard`)"
     kind: Rule
