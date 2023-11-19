@@ -42,6 +42,8 @@ spec:
         expose: true
         exposedPort: 80
         protocol: TCP
+        tls:
+          enabled: false
 
       intwebsecure:
         port: 8443
