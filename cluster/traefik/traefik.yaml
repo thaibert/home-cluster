@@ -22,6 +22,10 @@ spec:
       annotations:
         kube-vip.io/loadbalancerIPs: 10.1.1.1
         external-dns.alpha.kubernetes.io/hostname: traefik.k8s.thaibert.com
+    providers:
+      kubernetesIngress:
+        publishedService:
+          enabled: true  # Allow external-dns to pick up annotations from IngressRoute objects
     logs:
       general:
         level: INFO
