@@ -44,8 +44,6 @@ spec:
 
     service:
       main:
-        annotations:
-          external-dns.alpha.kubernetes.io/hostname: jellyfin-server.k8s.thaibert.com
         type: LoadBalancer
         ports:
           http: # TODO: deprecate this
@@ -126,6 +124,7 @@ spec:
 
 
 ---
+# TODO: replace with ingressroute?
 apiVersion: v1
 kind: Service
 metadata:
@@ -139,6 +138,24 @@ spec:
       port: 7359
       targetPort: 7359
   type: LoadBalancer
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: jellyfin-server
+  namespace: jellyfin
+  annotations:
+    external-dns.alpha.kubernetes.io/target: traefik.k8s.thaibert.com
+spec:
+  entryPoints:
+  - intweb
+  - intwebsecure
+  routes:
+  - match: "Host(`jellyfin.k8s.thaibert.com`)"
+    kind: Rule
+    services:
+      - name: jellyfin-server
+        port: 8096
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
