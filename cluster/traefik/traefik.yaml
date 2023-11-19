@@ -45,6 +45,10 @@ spec:
         expose: false # TODO
         exposedPort: 7443
         protocol: TCP
+
+    ingressRoute:
+      dashboard:
+        enabled: false
       
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
