@@ -1,0 +1,158 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: deluge
+  namespace: deluge
+spec:
+  releaseName: deluge
+  chart:
+    spec:
+      chart: deluge
+      version: 5.4.2
+      sourceRef:
+        kind: HelmRepository
+        name: k8s-at-home
+  interval: 5m
+  values:
+    # IMPORTANT NOTE
+    #
+    # This chart inherits from our common library chart. You can check the default values/options here:
+    # https://github.com/k8s-at-home/library-charts/tree/main/charts/stable/common/values.yaml
+    image:
+      # -- image repository
+      repository: linuxserver/deluge
+      # -- image pull policy
+      pullPolicy: IfNotPresent
+      # -- image tag
+      tag: "2.0.5-r0-ls145"
+
+    # -- environment variables. See more environment variables in the [deluge documentation](https://github.com/linuxserver/docker-deluge#parameters).
+    # @default -- See below
+    env:
+      # -- Specify the user ID the application will run as
+      PUID: "1203" # deluge
+      # -- Specify the group ID the application will run as
+      PGID: "1100" # gmedia
+      # -- Set the container timezone
+      TZ: "Europe/Copenhagen"
+      # -- Set the loglevel output when running Deluge
+      # DELUGE_LOGLEVEL: "info" # Default is "info" for deluged and "warning" for deluge-web
+
+    # -- Configures service settings for the chart.
+    # @default -- See values.yaml
+    service:
+      deluge:
+        ports:
+          http:
+            port: 8112
+            enabled: true
+
+    # -- Configure persistence settings for the chart under this key.
+    # @default -- See values.yaml
+    persistence:
+      config:
+        enabled: true
+        mountPath: "/config"
+        type: "custom"
+        accessMode: "ReadWriteMany"
+        volumeSpec:
+          nfs:
+            server: "10.0.0.3"
+            path: "/mnt/danger/scratch/deluge/config"
+      # config2:  # TODO: move to pvc instead of nfs
+      #   enabled: true
+      #   type: "pvc"
+      #   size: "2Gi"
+      #   accessMode: "ReadWriteOnce"
+      #   mountPath: "/config2"
+
+      downloads:
+        enabled: true
+        mountPath: "/downloads/in-progress"
+        type: "custom"
+        accessMode: "ReadWriteMany"
+        volumeSpec:
+          nfs:
+            server: "10.0.0.3"
+            path: "/mnt/danger/scratch/deluge/scratchspace"
+
+      dottorrent:
+        enabled: true
+        mountPath: "/downloads/dottorrent"
+        type: "custom"
+        accessMode: "ReadWriteMany"
+        volumeSpec:
+          nfs:
+            server: "10.0.0.3"
+            path: "/mnt/danger/scratch/deluge/dottorrent"
+
+      ratio-seeding:
+        enabled: true
+        mountPath: "/downloads/ratio-seeding"
+        type: "custom"
+        accessMode: "ReadWriteMany"
+        volumeSpec:
+          nfs:
+            server: "10.0.0.3"
+            path: "/mnt/danger/scratch/deluge/ratio-seeding"
+
+      complete:
+        enabled: true
+        mountPath: "/downloads/complete"
+        type: "custom"
+        accessMode: "ReadWriteMany"
+        volumeSpec:
+          nfs:
+            server: "10.0.0.3"
+            path: "/mnt/pool0/multimedia/incoming"
+
+    resources:
+      # limits:
+      #   cpu: 3500m
+      #   memory: 6000Mi
+      # requests:
+      #   cpu: 1000m
+      #   memory: 2048Mi
+
+    addons:
+      vpn:
+        enabled: true
+        type: "wireguard"
+        configFile: |-
+          ## insert with the option:   --set-file addons.vpn.configFile=<...>
+
+        scripts:
+          up: |-
+            echo vpn up
+
+          down: |-
+            echo vpn down
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: deluge-ui
+  namespace: deluge
+  annotations:
+    external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
+spec:
+  entryPoints:
+  - intweb
+  - intwebsecure
+  routes:
+  - match: "Host(`deluge.k8s.thaibert.com`)"
+    kind: Rule
+    services:
+      - name: deluge
+        port: 8112
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: k8s-at-home
+  namespace: deluge
+spec:
+  interval: 30m
+  url: https://k8s-at-home.com/charts/
+
