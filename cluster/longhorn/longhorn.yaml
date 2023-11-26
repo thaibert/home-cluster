@@ -31,7 +31,7 @@ metadata:
   name: longhorn-dashboard
   namespace: longhorn-system
   annotations:
-    external-dns.alpha.kubernetes.io/target: traefik.k8s.thaibert.com
+    external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
 spec:
   entryPoints:
   - intweb

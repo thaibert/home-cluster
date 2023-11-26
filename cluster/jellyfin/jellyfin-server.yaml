@@ -129,7 +129,7 @@ metadata:
   name: jellyfin-server-client-discovery-local-network
   namespace: jellyfin
   annotations:
-    external-dns.alpha.kubernetes.io/target: traefik.k8s.thaibert.com
+    external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
 spec:
   entryPoints:
   - port7359udp
@@ -144,7 +144,7 @@ metadata:
   name: jellyfin-server
   namespace: jellyfin
   annotations:
-    external-dns.alpha.kubernetes.io/target: traefik.k8s.thaibert.com
+    external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
 spec:
   entryPoints:
   - intweb

@@ -21,7 +21,7 @@ spec:
       type: LoadBalancer
       annotations:
         kube-vip.io/loadbalancerIPs: 10.1.1.1
-        external-dns.alpha.kubernetes.io/hostname: traefik.k8s.thaibert.com
+        external-dns.alpha.kubernetes.io/hostname: ingress.k8s.thaibert.com
     providers:
       kubernetesIngress:
         publishedService:
