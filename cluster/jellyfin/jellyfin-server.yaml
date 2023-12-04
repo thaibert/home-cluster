@@ -27,6 +27,9 @@ spec:
       tag: 10.8.10
       pullPolicy: IfNotPresent
 
+    podAnnotations:
+      k8s.v1.cni.cncf.io/networks: macvlan-conf
+
     resources:
       limits:
         nvidia.com/gpu: 1
@@ -134,10 +137,6 @@ spec:
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteUDP
-# TODO: Multicast UDP probably needs to be enabled.
-#       This works when targeting the DNS-registered hostname directly, but not from the actual apps.
-#       Could work with multus-cni, but it's incompatible with cilium. Maybe switch to flannel?
-#       (Cilium seems to expect only 1 interface in each pod or something...)
 metadata:
   name: jellyfin-server-client-discovery-local-network
   namespace: jellyfin
@@ -149,6 +148,7 @@ spec:
   routes:
   - services:
       - name: jellyfin-server
+        # Info: clients seem to broadcast on 255.255.255.255:7359
         port: 7359
 ---
 apiVersion: traefik.io/v1alpha1
@@ -170,6 +170,22 @@ spec:
       - name: jellyfin-server
         port: 8096
 ---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: macvlan-conf
+  namespace: jellyfin
+spec:
+  config: '{
+      "cniVersion": "0.3.0",
+      "type": "macvlan",
+      "master": "eno1",
+      "mode": "bridge",
+      "ipam": {
+        "type": "dhcp"
+      }
+    }'
+---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
@@ -178,3 +194,4 @@ metadata:
 spec:
   interval: 30m
   url: https://k8s-at-home.com/charts/
+
