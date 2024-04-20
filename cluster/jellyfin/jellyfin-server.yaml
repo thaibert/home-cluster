@@ -28,7 +28,7 @@ spec:
       pullPolicy: IfNotPresent
 
     podAnnotations:
-      k8s.v1.cni.cncf.io/networks: macvlan-conf
+#      k8s.v1.cni.cncf.io/networks: macvlan-conf
 
     resources:
       limits:
@@ -170,22 +170,22 @@ spec:
       - name: jellyfin-server
         port: 8096
 ---
-apiVersion: "k8s.cni.cncf.io/v1"
-kind: NetworkAttachmentDefinition
-metadata:
-  name: macvlan-conf
-  namespace: jellyfin
-spec:
-  config: '{
-      "cniVersion": "0.3.0",
-      "type": "macvlan",
-      "master": "eno1",
-      "mode": "bridge",
-      "ipam": {
-        "type": "dhcp"
-      }
-    }'
----
+#apiVersion: "k8s.cni.cncf.io/v1"
+#kind: NetworkAttachmentDefinition
+#metadata:
+#  name: macvlan-conf
+#  namespace: jellyfin
+#spec:
+#  config: '{
+#      "cniVersion": "0.3.0",
+#      "type": "macvlan",
+#      "master": "eno1",
+#      "mode": "bridge",
+#      "ipam": {
+#        "type": "dhcp"
+#      }
+#    }'
+#---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
