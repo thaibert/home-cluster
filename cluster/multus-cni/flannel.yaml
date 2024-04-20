@@ -14,7 +14,7 @@ spec:
         name: flannel
   interval: 1m
   values:
-    #podCidr: "10.244.0.0/16"
+    podCidr: "10.244.0.0/16" # flannel default
 
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
