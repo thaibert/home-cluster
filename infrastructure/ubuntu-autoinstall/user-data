@@ -1,0 +1,45 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  keyboard:
+    layout: "dk"
+
+  ssh:
+    install-server: true
+    allow-pw: false
+
+  # "[late-commands] are run in the installer environment with the installed system mounted at /target."
+  late-commands:
+    - "echo ubuntu-$(openssl rand -hex 3) > /target/etc/hostname"  # randomly generate the hostname
+    - "shutdown -h now"  # avoid an infinite installer loop (by allowing the operator to unplug the USB before booting again)
+
+  storage:
+    layout:
+      name: lvm
+      policy: scaled
+      match:
+        path: "/dev/sda"  # A workaround since my CIDATA USB has no WWN, so the USB is eligible for "is the biggest disk?",
+                          # but having no WWN breaks the sorting code.
+                          # I cannot filter the USB out, so the default "largest" disk strategy sadly does not work..
+                          # All my disks are SATA SSDs, so they _should_ be named /dev/sda by default (rather than being NVMe)...
+
+  user-data:
+    timezone: "Europe/Copenhagen"
+    package_upgrade: true
+    package_update: true
+    users:
+      - name: ubuntu
+        primary_group: users
+        groups: sudo
+        lock_passwd: false # TODO: changed this temporarily to log in locally on the machine
+        # pass is "ubuntu". Created with `mkpasswd --method=SHA-512 --rounds=500000`, but other ways would probably work just as well. Just need `lock_passwd` above false
+        passwd: "$6$rounds=500000$0VWfd3o3ThgjqfLP$XKVtAYQZEI/EOBsLfnTfouEOSZEQw69bF5HZVUhH7PCURQSUjdODE816bUFQve6bYZqnUvx/gbmkdC4p3KsW31"
+        shell: /bin/bash
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMS34XsW2g+xfodowoSO5eY4xJc0iQtPi2OFXWZ5yOTg thaibert@fw13"
+
+    power_state: # desired state after all config modules have run
+      mode: reboot
+      timeout: 120
+

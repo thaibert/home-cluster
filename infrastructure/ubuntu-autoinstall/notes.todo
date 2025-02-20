@@ -1,0 +1,83 @@
+
+
+Mainly following https://www.jimangel.io/posts/automate-ubuntu-22-04-lts-bare-metal/
+( but also https://github.com/UntouchedWagons/Ubuntu-AutoInstall-Docs  ( and by extension  https://www.pugetsystems.com/labs/hpc/ubuntu-22-04-server-autoinstall-iso/ ) )
+
+
+
+`dnf install p7zip p7zip-plugins xorriso`
+
+
+`wget https://cdimage.ubuntu.com/ubuntu-server/noble/daily-live/current/noble-live-server-amd64.iso`
+`7z -y x noble-live-server-amd64.iso -o iso-contents`
+`mv 'iso-contents/[BOOT] BOOT`   # TODO: this seems unnecessary. 
+
+At this point: add extra menuoption to iso-contents/boot/grub/grub.cfg:
+```grub.cfg
+menuentry "Autoinstall Ubuntu Server" {
+	set gfxpayload=keep
+	linux	/casper/vmlinuz autoinstall quiet ---
+	initrd	/casper/initrd
+}
+```
+
+(and also set TIMEOUT from 30 --> 1-ish)
+
+`./mk-iso.sh`
+
+
+FORMAT THE USB DRIVE AS FAT32!!
+(you might also need to mess with partitions here :thinking_face:)
+afterwards: copy your new  `ubuntu-24.04.01-autoinstall.iso` to your usb with `dd` :-)
+
+
+
+
+
+
+When copying modded ISO to the USB, it will probably freeze with something like 
+  2499805184 bytes (2,5 GB, 2,3 GiB) copied, 1 s, 2,5 GB/s
+`dd` is still syncing!
+Check e.g. `grep -i "dirty" /proc/meminfo` and see that it is going down.
+
+(TODO: might be more intuitive with `oflag=dsync` for dd?
+                              or `conv=fsync`? (https://superuser.com/a/960741)
+)
+
+
+
+On the CIDATA usb: you might need to `touch meta-data` to ensure config is picked up?
+
+
+The autoinstall died with a TypeError: '<' not supported between instances of 'NoneType' and 'str'.   <--- a python runtime type error.
+Turns out: it died when sorting the list of eligible boot drives that could be selected.
+This died because my USB has no WWN (world-wide name, a storage device id).
+  Since the sort_key of a Disk needs the WWN, it dies.
+  Workaround: Force /dev/sda instead of relying on "largest" from the eligible disks (since I cannot filter out the USB from the disks)...
+
+  https://github.com/canonical/subiquity/blob/146b9cbc8b08dd8dabffb0b82b794deaf6399b7e/subiquity/models/filesystem.py#L1756
+
+
+
+The BIOS must have UEFI boot enabled.
+UEFI Boot order:
+  <USB HDD>
+  <Harddrive>
+  <PXE>
+
+On the Dell machines, UEFI must explicitly be selected.
+The Lenovo machines have CSM enabled, so they can fall-back to Legacy if nothing can boot from UEFI.
+
+
+
+Lenovo: also set the BIOS settings in "Startup" to:
+  CSM -> Enabled
+  Boot Mode -> Auto
+  Boot Priority -> UEFI First
+
+
+
+
+
+
+
