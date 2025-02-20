@@ -1,0 +1,35 @@
+- name: "perform initial controlplane node setup"
+  ansible.builtin.include_tasks:
+    file: base.yaml
+
+- name: "prepare kubeconfig for kube-vip bootstrap"
+  block:
+    - name: "generate kubeconfig for kube-vip"
+      become: true
+      ansible.builtin.shell: |
+        kubeadm join phase control-plane-prepare download-certs \
+          --config {{ hostvars.localhost.kubeadm_config }}
+        kubeadm join phase control-plane-prepare kubeconfig \
+          --config {{ hostvars.localhost.kubeadm_config }}
+    - name: "place kubeconfig for kube-vip correctly"
+      become: true
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ hostvars.localhost.kube_vip_kubeconfig }}"
+        remote_src: true
+    - name: "ensure kube-vip _doesn't_ use controlplane vip"
+      become: true
+      ansible.builtin.shell: |
+        yq --in-place --yaml-output '
+          .clusters[] |= (
+            select(.name=="kubernetes")
+            | .cluster.server="https://127.0.0.1:6443"
+          )
+        ' {{ hostvars.localhost.kube_vip_kubeconfig }}
+
+- name: "kubeadm join"
+  become: true
+  register: kubeadm_join
+  ansible.builtin.shell: |
+    kubeadm join --config {{ hostvars.localhost.kubeadm_config }}
+- debug: var=kubeadm_join

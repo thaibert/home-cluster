@@ -1,0 +1,99 @@
+- name: "perform initial controlplane node setup"
+  ansible.builtin.include_tasks:
+    file: base.yaml
+
+- name: "prepare kubeconfig for kube-vip bootstrap"
+  block:
+    - name: "generate kubeconfig for kube-vip"
+      become: true
+      # Using `super-admin.conf` here to work around https://github.com/kube-vip/kube-vip/issues/684
+      # The issue: kube-vip uses `admin.conf` by default.
+      # This is broken since kubernetes v1.29+ because of security enhancements that
+      #   create `super-admin.conf` for bootstrapping, and only later add permissions to `admin.conf`.
+      # (Only applicable to the first controlplane node (i.e. the one calling `kubeadm init`)).
+      ansible.builtin.shell: |
+        kubeadm init phase certs ca \
+          --config {{ hostvars.localhost.kubeadm_config }}
+        kubeadm init phase kubeconfig super-admin \
+          --config {{ hostvars.localhost.kubeadm_config }}
+    - name: "place kubeconfig for kube-vip correctly"
+      become: true
+      ansible.builtin.copy:
+        src: /etc/kubernetes/super-admin.conf
+        dest: "{{ hostvars.localhost.kube_vip_kubeconfig }}"
+        remote_src: true
+    - name: "ensure kube-vip _doesn't_ use vip for k8s api access"
+      # During bootstrap, the kube-vip pod(s) restart(s) for each new controlplane node.
+      # This had the effect of reacquiring the lock not working.
+      # I'm unsure if this is an artifact of something else, but
+      #   just hitting the local node for k8s api access works.
+      become: true
+      ansible.builtin.shell: |
+        yq --in-place --yaml-output '
+          .clusters[] |= (
+            select(.name=="kubernetes")
+            | .cluster.server="https://127.0.0.1:6443"
+          )
+        ' {{ hostvars.localhost.kube_vip_kubeconfig }}
+
+- name: "kubeadm init"
+  become: true
+  register: kubeadm_init
+  ansible.builtin.shell: |
+    kubeadm init \
+      --upload-certs \
+      --config {{ hostvars.localhost.kubeadm_config }}
+- debug: var=kubeadm_init
+
+- name: "generate kubeadm discovery-token-ca-cert-hash"
+  run_once: true
+  block:
+    - name: 
+      become: true
+      register: generate_discovery_token_ca_cert_hash
+      ansible.builtin.shell: |
+        openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -pubkey |
+        openssl rsa -pubin -outform DER 2>/dev/null |
+        sha256sum |
+        awk '{print $1}'
+    - delegate_to: localhost
+      delegate_facts: true
+      ansible.builtin.set_fact:
+        discovery_token_ca_cert_hash: sha256:{{ generate_discovery_token_ca_cert_hash.stdout }}
+
+- name: "install cilium cni"
+  become: true
+  block:
+    - name: "download helm"
+      block:
+        - name: "download armored gpg key"
+          ansible.builtin.get_url:
+            url: https://baltocdn.com/helm/signing.asc
+            dest: /etc/apt/keyrings/helm.asc
+        - name: "add repository"
+          ansible.builtin.apt_repository:
+            repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/helm.asc] https://baltocdn.com/helm/stable/debian/ all main"
+            state: present
+        - ansible.builtin.apt:
+            update_cache: true
+        - ansible.builtin.apt:
+            pkg: [ helm ]
+    - name: "install cilium"
+      block:
+        - ansible.builtin.set_fact:
+            cilium_valuesfile: /tmp/cilium.values.yaml
+        - name: "place cilium valuesfile on target node"
+          ansible.builtin.copy:
+            src: "{{ inventory_dir }}/resources/cilium.values.yaml"
+            dest: "{{ cilium_valuesfile }}"
+        - name: "helm install"
+          kubernetes.core.helm:
+            release_name: cilium
+            chart_version: 1.17.1
+            release_namespace: kube-system
+            values_files:
+              - "{{ cilium_valuesfile }}"
+            chart_repo_url: https://helm.cilium.io
+            chart_ref: cilium
+            atomic: true
+            kubeconfig: /etc/kubernetes/admin.conf

@@ -1,0 +1,49 @@
+- name: "add kubernetes apt repo"
+  become: true
+  block:
+    - name: "download armored gpg key"
+      ansible.builtin.get_url:
+        url: https://pkgs.k8s.io/core:/stable:/{{ kubernetes.release_version }}/deb/Release.key
+        dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    - name: "add repository"
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/{{ kubernetes.release_version }}/deb/ /"
+        state: present
+
+- name: "sudo apt update"
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: "sudo apt install <...>"
+  become: true
+  ansible.builtin.apt:
+    allow_change_held_packages: true  # This assumes a clean install!
+    pkg:
+      - kubeadm={{ kubernetes.patch_version }}
+      - kubelet={{ kubernetes.patch_version }}
+      - kubectl={{ kubernetes.patch_version }}
+      - kubernetes-cni
+
+- name: "systemctl enable kubelet"
+  become: true
+  ansible.builtin.service:
+    name: kubelet
+    enabled: yes
+  
+- name: "sudo apt-mark hold <...>"
+  become: true
+  block:
+    - name: "kubelet"
+      ansible.builtin.dpkg_selections:
+        name: kubelet
+        selection: hold
+    - name: "kubeadm"
+      ansible.builtin.dpkg_selections:
+        name: kubeadm
+        selection: hold
+    - name: "kubectl"
+      ansible.builtin.dpkg_selections:
+        name: kubectl
+        selection: hold
+    # TODO: what about kubernetes-cni?

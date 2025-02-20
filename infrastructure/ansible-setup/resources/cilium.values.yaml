@@ -1,0 +1,6 @@
+ipam:
+  # See https://docs.cilium.io/en/stable/network/concepts/ipam/kubernetes/
+  mode: kubernetes  # Use `podCIDRs` set on Node objects by way of the ClusterConfiguration's `podSubnet`.
+k8s:
+  requireIPv4PodCIDR: true
+

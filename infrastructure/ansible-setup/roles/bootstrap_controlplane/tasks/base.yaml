@@ -1,0 +1,32 @@
+- name: "kubeadm reset"
+  become: true
+  ansible.builtin.shell: |
+    kubeadm reset --force
+
+- name: "unregister kube-vip vip from interface"
+  become: true
+  # TODO: determine interface name dynamically
+  ansible.builtin.shell: |
+    ip addr del {{ controlplane_vip }}/32 dev enp1s0f0 || echo "no vip assigned, skipping..."
+
+# TODO: clean up iptables rules?  https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-reset/#cleanup-of-network-traffic-rules
+# ```bash
+#   ctr image pull registry.k8s.io/kube-proxy:v1.32.2
+#   ctr run --rm --privileged registry.k8s.io/kube-proxy:v1.32.2 $(openssl rand -hex 6) sh -c "kube-proxy --cleanup && echo DONE"
+# ```
+
+- name: "copy necessary config files"
+  block:
+    - name: "cp kubeadm-config.yaml"
+      ansible.builtin.template:
+        src: "{{ inventory_dir }}/resources/kubeadm-config.yaml.j2"
+        dest: "{{ hostvars.localhost.kubeadm_config }}"
+    - name: "copy kube-vip static pod manifest"
+      become: true
+      block:
+        - ansible.builtin.file:
+            path: /etc/kubernetes/manifests 
+            state: directory
+        - ansible.builtin.template:
+            src: "{{ inventory_dir }}/resources/kube-vip-static-pod.yaml.j2"
+            dest: "/etc/kubernetes/manifests/kube-vip.yaml"

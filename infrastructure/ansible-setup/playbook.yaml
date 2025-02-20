@@ -1,0 +1,38 @@
+- name: Install kubernetes components and prerequisites
+  hosts: controlplane_nodes,worker_nodes
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  tasks:
+    - import_role:
+        name: prelude
+        tasks_from: prelude.yaml
+    - import_role:
+        name: containerd
+        tasks_from: containerd.yaml
+    - import_role:
+        name: kubernetes_components
+        tasks_from: kubernetes_components.yaml
+
+- name: Instantiate variables for cluster bootstrap
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: first_controlplane_node
+  tasks:
+    - import_role:
+        name: bootstrap_controlplane
+        tasks_from: variables.yaml
+
+- name: Bootstrap first controlplane node
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: first_controlplane_node
+  tasks:
+    - import_role:
+        name: bootstrap_controlplane
+        tasks_from: first_controlplane_node.yaml
+
+- name: Bootstrap the rest of the controlplane nodes
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: rest_of_the_controlplane_nodes
+  tasks:
+      - import_role:
+          name: bootstrap_controlplane
+          tasks_from: rest_of_the_controlplane_nodes.yaml
+      

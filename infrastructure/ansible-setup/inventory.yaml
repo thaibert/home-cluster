@@ -1,0 +1,19 @@
+first_controlplane_node:
+  hosts:
+    controlplane-1:
+      ansible_host: 10.0.1.101
+
+rest_of_the_controlplane_nodes:
+  hosts:
+    controlplane-2:
+      ansible_host: 10.0.1.102
+    controlplane-3:
+      ansible_host: 10.0.1.103
+
+controlplane_nodes:
+  children:
+    first_controlplane_node:
+    rest_of_the_controlplane_nodes:
+
+worker_nodes:
+  hosts: 

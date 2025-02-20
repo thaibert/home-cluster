@@ -1,0 +1,39 @@
+- name: "sudo apt update"
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: "sudo apt upgrade"
+  become: true
+  ansible.builtin.apt:
+    upgrade: full
+
+- name: "sudo apt install <...>"
+  become: true
+  ansible.builtin.apt:
+    pkg:
+      - openssl
+      - yq
+
+- name: "disable swap"
+  become: true
+  ansible.builtin.shell: "swapoff -a"
+
+- name: "persist swap disabling"
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/etc/fstab"
+    regexp: '(?i)^([^#][\S]+\s+(none|swap)\s+swap.*)'
+    line: '# \1'
+    backrefs: true
+    state: present
+
+- name: "enable ipv4 forwarding"
+  become: true
+  ansible.posix.sysctl:
+    key: "net.ipv4.ip_forward"
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+    

@@ -1,0 +1,24 @@
+- run_once: true
+  block:
+    - name: "generate values for variables (once)"
+      become: true
+      block:
+        - name: "generate certificate-key"
+          register: kubeadm_certificate_key
+          ansible.builtin.shell: |
+            kubeadm certs certificate-key
+
+        - name: "generate bootstrapToken"
+          register: kubeadm_bootstrap_token
+          ansible.builtin.shell: |
+            kubeadm token generate
+    
+    - name: "set necessary variables"
+      delegate_to: localhost
+      delegate_facts: true
+      ansible.builtin.set_fact:
+        kubeadm_config: "/tmp/kubeadm-config.yaml"
+        kube_vip_kubeconfig: "/etc/kubernetes/kube-vip-admin.conf"
+        certificate_key: "{{ kubeadm_certificate_key.stdout }}"
+        bootstrap_token: "{{ kubeadm_bootstrap_token.stdout }}"
+        discovery_token_ca_cert_hash: "WHAT(no value!)"  # Fake this out initially. Will be overwritten once ca.crt is generated.
