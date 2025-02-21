@@ -1,0 +1,51 @@
+#apiVersion: spiderpool.spidernet.io/v2beta1
+#kind: SpiderIPPool
+#metadata:
+#  name: 10-v4
+#spec:
+#  disable: false
+#  gateway: 10.0.0.1
+#  ips:
+#  - 10.42.0.1-10.42.255.250
+#  subnet: 10.0.0.0/8
+#
+#---
+#apiVersion: spiderpool.spidernet.io/v2beta1
+#kind: SpiderMultusConfig
+#metadata:
+#  name: macvlan-enp1s0f0
+#spec:
+#  cniType: macvlan
+#  macvlan:
+#    master:
+#    - enp1s0f0
+#    ippools:
+#      ipv4:
+#      - 10-v4
+#    vlanID: 0
+#
+#---
+#
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: nginx
+#spec:
+#  selector:
+#    matchLabels:
+#      app: nginx
+#  template:
+#    metadata:
+#      annotations:
+#        k8s.v1.cni.cncf.io/networks: macvlan-enp1s0f0  # <---- the money line
+#      labels:
+#        app: nginx
+#    spec:
+#      containers:
+#      - name: nginx
+#        image: nginx
+#        imagePullPolicy: IfNotPresent
+#        ports:
+#        - name: http
+#          containerPort: 80
+#          protocol: TCP

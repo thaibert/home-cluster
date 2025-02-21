@@ -13,3 +13,12 @@
         - ansible.builtin.template:
             src: "{{ inventory_dir }}/resources/kube-vip-static-pod.yaml.j2"
             dest: "/etc/kubernetes/manifests/kube-vip.yaml"
+
+- name: "set up /etc/hosts"
+  # TODO: spiderpool seems to have a bug where `hostnetwork: false` doesn't work (the spiderpool-controller never succeeds its healthcheck), and `hostnetwork: true` uses `dnsPolicy: ClusterFirstWithHost` and requires either (1) some DNS server in the chain to have a record for "localhost", or (2) the node needs a `127.0.0.1 localhost` entry in its hostfile.
+  # This is an issue because my autoinstall'd ubuntu nodes have empty /etc/hosts files by default...
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1  localhost"
+    state: present

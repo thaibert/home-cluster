@@ -4,3 +4,9 @@ ipam:
 k8s:
   requireIPv4PodCIDR: true
 
+
+bpf:
+  vlanBypass: [0]
+cni:
+  exclusive: false
+

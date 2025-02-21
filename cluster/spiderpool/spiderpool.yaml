@@ -1,0 +1,33 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: spiderpool
+  namespace: kube-system
+spec:
+  releaseName: spiderpool
+  chart:
+    spec:
+      chart: spiderpool
+      version: v1.0.1
+      sourceRef:
+        kind: HelmRepository
+        name: spiderpool
+  interval: 5m
+  values:
+    coordinator:
+      mode: overlay
+    plugins:
+      installCNI: true
+#    spiderpoolController:
+#      debug:
+#        logLevel: debug
+#      hostnetwork: false
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: spiderpool
+  namespace: kube-system
+spec:
+  interval: 1h
+  url: https://spidernet-io.github.io/spiderpool
