@@ -1,3 +1,3 @@
 .PHONY: bootstrap-controlplane
 bootstrap-controlplane:
-	ansible-playbook playbook.yaml --inventory inventory.yaml --ask-become-pass
+	ansible-playbook playbook.yaml --inventory inventory.yaml --become-password-file=.password

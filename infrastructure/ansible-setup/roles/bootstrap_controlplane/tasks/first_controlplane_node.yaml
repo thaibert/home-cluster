@@ -45,6 +45,14 @@
       --config {{ hostvars.localhost.kubeadm_config }}
 - debug: var=kubeadm_init
 
+- name: "exfiltrate admin.conf kubeconfig"
+  become: true
+  run_once: true
+  ansible.builtin.fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ inventory_dir }}/out/admin.conf"
+    flat: true
+
 - name: "generate kubeadm discovery-token-ca-cert-hash"
   run_once: true
   block:

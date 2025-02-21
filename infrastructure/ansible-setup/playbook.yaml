@@ -20,6 +20,14 @@
         name: bootstrap_controlplane
         tasks_from: variables.yaml
 
+- name: Ensure a clean slate
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: controlplane_nodes
+  tasks:
+    - import_role:
+        name: bootstrap_controlplane
+        tasks_from: clean_slate.yaml
+
 - name: Bootstrap first controlplane node
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
   hosts: first_controlplane_node
