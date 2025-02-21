@@ -59,24 +59,26 @@ This died because my USB has no WWN (world-wide name, a storage device id).
 
 
 
+
+## Lenovo boxes BIOS settings ##
+Set the BIOS settings in "Startup" to:
+  CSM -> Enabled
+  Boot Mode -> Auto
+  Boot Priority -> UEFI First
+
 The BIOS must have UEFI boot enabled.
 UEFI Boot order:
   <USB HDD>
   <Harddrive>
   <PXE>
 
-On the Dell machines, UEFI must explicitly be selected.
-The Lenovo machines have CSM enabled, so they can fall-back to Legacy if nothing can boot from UEFI.
 
+## Dell boxes BIOS settings ##
+Dell's BIOS in the optiplex 7020 is hell-bent on controlling the boot order in the worst way possible.
+Cannot set groups, only individual USB ports?
+Even then, the BIOS "helpfully" moves boot entries around so you have no guarantees.
 
-
-Lenovo: also set the BIOS settings in "Startup" to:
-  CSM -> Enabled
-  Boot Mode -> Auto
-  Boot Priority -> UEFI First
-
-
-
+You need to install the Dell boxes interactively through the boot order selector (F12 at startup)...
 
 
 
