@@ -1,0 +1,13 @@
+- name: "common cluster node setup"
+  ansible.builtin.include_role:
+    name: common_cluster_node
+    tasks_from: base.yaml
+
+- name: "kubeadm join"
+  become: true
+  register: kubeadm_join
+  ansible.builtin.shell: |
+    kubeadm join \
+      --config {{ hostvars.localhost.kubeadm_config }}
+- debug: var=kubeadm_join
+

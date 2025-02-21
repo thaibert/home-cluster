@@ -22,10 +22,10 @@
 
 - name: Ensure a clean slate
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
-  hosts: controlplane_nodes
+  hosts: controlplane_nodes,worker_nodes
   tasks:
     - import_role:
-        name: bootstrap_controlplane
+        name: common_cluster_node
         tasks_from: clean_slate.yaml
 
 - name: Bootstrap first controlplane node
@@ -43,4 +43,11 @@
       - import_role:
           name: bootstrap_controlplane
           tasks_from: rest_of_the_controlplane_nodes.yaml
-      
+
+- name: Join worker nodes to cluster
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: worker_nodes
+  tasks:
+      - import_role:
+          name: join_worker_nodes
+          tasks_from: join_worker_nodes.yaml

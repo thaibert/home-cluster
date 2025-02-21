@@ -2,13 +2,16 @@ first_controlplane_node:
   hosts:
     controlplane-1:
       ansible_host: 10.0.1.101
+      interface: enp1s0f0  # TODO: dynamically determine interface name?
 
 rest_of_the_controlplane_nodes:
   hosts:
     controlplane-2:
       ansible_host: 10.0.1.102
+      interface: enp1s0f0
     controlplane-3:
       ansible_host: 10.0.1.103
+      interface: enp1s0f0
 
 controlplane_nodes:
   children:
@@ -17,3 +20,9 @@ controlplane_nodes:
 
 worker_nodes:
   hosts: 
+    worker-1:
+      ansible_host: 10.0.1.1
+      interface: eno1
+    worker-2:
+      ansible_host: 10.0.1.2
+      interface: eno1

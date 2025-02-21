@@ -1,5 +1,6 @@
 
-  # TODO: ephemeral etcd cluster for dynamic discovery?
   # TODO: flux!
-  # TODO: worker nodes!
   # TODO:   -> nvidia driver
+
+  # TODO: kube-vip daemonset only on worker nodes to do better service load balancing?
+

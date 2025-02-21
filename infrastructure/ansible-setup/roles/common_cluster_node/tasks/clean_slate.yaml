@@ -5,9 +5,8 @@
 
 - name: "unregister kube-vip vip from interface"
   become: true
-  # TODO: determine interface name dynamically
   ansible.builtin.shell: |
-    ip addr del {{ controlplane_vip }}/32 dev enp1s0f0 || echo "no vip assigned, skipping..."
+    ip addr del {{ controlplane_vip }}/32 dev {{ interface }} || echo "no vip assigned, skipping..."
 
 # TODO: clean up iptables rules?  https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-reset/#cleanup-of-network-traffic-rules
 # ```bash

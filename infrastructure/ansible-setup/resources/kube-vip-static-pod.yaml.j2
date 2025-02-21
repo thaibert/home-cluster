@@ -21,7 +21,7 @@ spec:
         fieldRef:
           fieldPath: spec.nodeName
     - name: vip_interface
-      value: "enp1s0f0"  # TODO: dynamically determine interface name?
+      value: "{{ interface }}"
     - name: vip_cidr
       value: "32"
     - name: dns_mode

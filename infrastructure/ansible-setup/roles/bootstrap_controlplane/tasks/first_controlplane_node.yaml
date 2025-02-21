@@ -1,6 +1,7 @@
-- name: "perform initial controlplane node setup"
-  ansible.builtin.include_tasks:
-    file: base.yaml
+- name: "common cluster node setup"
+  ansible.builtin.include_role:
+    name: common_cluster_node
+    tasks_from: base.yaml
 
 - name: "prepare kubeconfig for kube-vip bootstrap"
   block:

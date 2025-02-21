@@ -1,23 +1,4 @@
 apiVersion: kubeadm.k8s.io/v1beta4
-kind: InitConfiguration
-certificateKey: "{{ hostvars.localhost.certificate_key }}"
-bootstrapTokens:
-  - token: "{{ hostvars.localhost.bootstrap_token }}"
-
----
-apiVersion: kubeadm.k8s.io/v1beta4
-kind: JoinConfiguration
-discovery:
-  bootstrapToken:
-    token: "{{ hostvars.localhost.bootstrap_token }}"
-    apiServerEndpoint: "{{ controlplane_vip }}:6443"
-    caCertHashes:
-      - "{{ hostvars.localhost.discovery_token_ca_cert_hash }}"
-controlPlane:
-  certificateKey: "{{ hostvars.localhost.certificate_key }}"
-
----
-apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
 etcd:
   local:
@@ -27,3 +8,27 @@ networking:
   podSubnet: "172.19.0.0/16"
   dnsDomain: "cluster.local"
 controlPlaneEndpoint: {{ controlplane_vip }}:6443
+
+---
+{% if "first_controlplane_node" in group_names %}
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+certificateKey: "{{ hostvars.localhost.certificate_key }}"
+bootstrapTokens:
+  - token: "{{ hostvars.localhost.bootstrap_token }}"
+{% else %}
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    token: "{{ hostvars.localhost.bootstrap_token }}"
+    apiServerEndpoint: "{{ controlplane_vip }}:6443"
+    caCertHashes:
+      - "{{ hostvars.localhost.discovery_token_ca_cert_hash }}"
+{% if "controlplane_nodes" in group_names %}
+controlPlane:
+  certificateKey: "{{ hostvars.localhost.certificate_key }}"
+{% endif %}
+{% endif %}
+
+---
