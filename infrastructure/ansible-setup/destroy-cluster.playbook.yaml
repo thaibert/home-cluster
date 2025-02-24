@@ -1,0 +1,39 @@
+- name: Reset as much as possible on all nodes
+  hosts: controlplane_nodes,worker_nodes
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  tasks:
+    - run_once: true
+      delegate_to: "{{ groups.controlplane_nodes[0] }}"
+      become: true
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      register: num_pods_raw
+      ansible.builtin.shell: |
+        kubectl get pods --all-namespaces=true --no-headers=true | wc --lines
+    - set_fact:
+        num_pods: "{{ (num_pods_raw.stderr | length == 0) | ternary(num_pods_raw.stdout, -1) }}"
+      delegate_to: localhost
+      delegate_facts: true
+      run_once: true
+
+    - pause:
+        prompt: "Definitely destroy cluster? Currently running [{{ hostvars.localhost.num_pods }}] pods. Please input this amount."
+      register: definitely_destroy_raw
+    - set_fact:
+        definitely_destroy: "{{ definitely_destroy_raw.user_input }}"
+      delegate_to: localhost
+      delegate_facts: true
+      run_once: true
+
+
+    - when: hostvars.localhost.definitely_destroy == hostvars.localhost.num_pods
+      block:
+        - name: "perform common cleanup"
+          import_role:
+            name: common_cluster_node
+            tasks_from: clean_slate.yaml
+        - name: "rm -r /etc/cni"
+          ansible.builtin.file:
+            path: /etc/cni
+            state: absent
+          become: true
