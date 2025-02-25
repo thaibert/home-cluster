@@ -51,3 +51,16 @@
       - import_role:
           name: join_worker_nodes
           tasks_from: join_worker_nodes.yaml
+
+- name: Install fluxcd
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  vars_prompt:
+    - name: github_personal_access_token
+      prompt: "Enter Github PAT..."
+      private: true
+  hosts: controlplane_nodes
+  tasks:
+    - import_role:
+        name: install_flux
+        tasks_from: install_flux.yaml
+      run_once: true

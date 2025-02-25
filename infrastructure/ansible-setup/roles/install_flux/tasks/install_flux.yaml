@@ -1,0 +1,23 @@
+- name: Install fluxcd
+  run_once: true
+  block:
+    - name: install flux cli
+      become: true
+      ansible.builtin.shell: |
+        curl -s https://raw.githubusercontent.com/fluxcd/flux2/main/install/flux.sh | sudo bash
+    - name: bootstrap flux
+      become: true
+      environment:
+        GITHUB_TOKEN: "{{ github_personal_access_token }}"
+      ansible.builtin.shell: |
+        flux bootstrap github \
+          --repository=home-cluster \
+          --path=cluster/bootstrap \
+          --owner=thaibert \
+          --private=false \
+          --personal=true \
+          --kubeconfig=/etc/kubernetes/admin.conf \
+          --token-auth
+      register: output
+    - debug: var=output
+
