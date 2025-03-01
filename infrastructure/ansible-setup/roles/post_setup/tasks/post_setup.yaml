@@ -1,0 +1,24 @@
+- name: apply node labels
+  when: node_labels is defined
+  block:
+    - become: true
+      delegate_to: "{{ groups.controlplane_nodes[0] }}"  # Just has to be _someone_ with access to the k8s api
+      environment:
+        KUBECONFIG: /etc/kubernetes/admin.conf
+      ansible.builtin.shell: |
+        kubectl patch node/{{ ansible_hostname }} --patch-file /dev/stdin <<"EOF"
+        metadata:
+          labels: {{ node_labels }}
+        EOF
+      register: apply_node_labels_debug
+    - debug:
+        msg:
+          cmd: "{{ apply_node_labels_debug.cmd }}"
+          stdout: "{{ apply_node_labels_debug.stdout_lines }}"
+
+- name: install nfs helper binaries
+  # The NFS helper binaries are necessary for workloads to mount NFS volumes
+  become: true
+  when: '"worker_nodes" in group_names'
+  ansible.builtin.apt:
+    pkg: [ nfs-common ]

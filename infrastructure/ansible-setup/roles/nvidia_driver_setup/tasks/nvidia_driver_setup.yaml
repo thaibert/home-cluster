@@ -1,0 +1,40 @@
+- name: "install nvidia-headless-server driver"
+  become: true
+  block:
+    - ansible.builtin.apt:
+        update_cache: true
+    - ansible.builtin.apt:
+        pkg: [ "{{ nvidia_driver }}" ]
+    - ansible.builtin.reboot:
+
+- name: "install nvidia-container-toolkit"
+  # See  https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+  become: true
+  block:
+    - name: "download armored gpg key"
+      ansible.builtin.get_url:
+        url: https://nvidia.github.io/libnvidia-container/gpgkey
+        dest: /usr/share/keyrings/nvidia-container-toolkit-keyring.asc
+    - name: "add nvidia repositories"
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.asc] https://nvidia.github.io/libnvidia-container/stable/deb/amd64/ /"
+        state: present
+    - ansible.builtin.apt:
+        update_cache: true
+    - ansible.builtin.apt:
+        pkg: [ nvidia-container-toolkit ]
+
+- name: "configure containerd to support nvidia gpus in k8s"
+  become: true
+  block:
+      # This will add an `nvidia` runtime class. It will not be the default
+      #   (since that would force all workloads to use the nvidia runtimeClass).
+      # The `nvidia` runtime class  must be added manually as a RuntimeClass
+      #   object to allow pods to use it.
+    - ansible.builtin.shell: |
+        nvidia-ctk runtime configure --runtime=containerd
+
+    - name: "restart containerd service"
+      ansible.builtin.systemd_service:
+        service: containerd
+        state: restarted

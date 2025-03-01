@@ -52,6 +52,14 @@
           name: join_worker_nodes
           tasks_from: join_worker_nodes.yaml
 
+- name: Common post-setup operations
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: controlplane_nodes,worker_nodes
+  tasks:
+      - import_role:
+          name: post_setup
+          tasks_from: post_setup.yaml
+
 - name: Install fluxcd
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
   vars_prompt:
@@ -64,3 +72,12 @@
         name: install_flux
         tasks_from: install_flux.yaml
       run_once: true
+
+- name: Setup nvidia drivers and assorted bits
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: worker_nodes
+  tasks:
+      - when: nvidia_driver is defined
+        import_role:
+          name: nvidia_driver_setup
+          tasks_from: nvidia_driver_setup.yaml
