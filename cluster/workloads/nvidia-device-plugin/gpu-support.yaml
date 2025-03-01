@@ -16,6 +16,7 @@ spec:
   values:
     nodeSelector:
       accelerator: nvidia-turing-t400
+    runtimeClassName: nvidia
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
