@@ -1,0 +1,30 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: kube-vip-cloud-provider-external-manifests
+  namespace: flux-system
+spec:
+  interval: 30m
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: kube-vip-cloud-provider
+    namespace: flux-system
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: kube-vip-cloud-provider
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://github.com/kube-vip/kube-vip-cloud-provider.git
+  ref:
+    branch: main
+  ignore: |
+    # exclude all
+    /*
+    # ...but include the manifest
+    !/manifest/kube-vip-cloud-controller.yaml

@@ -4,6 +4,7 @@ resources:
 #  - deluge
   - dns-local
   - jellyfin
+  - kube-vip-cloud-provider
   - longhorn
   - nvidia-device-plugin
   - spiderpool
