@@ -1,6 +1,0 @@
-
-  # TODO: flux!
-  # TODO:   -> nvidia driver
-
-  # TODO: kube-vip daemonset only on worker nodes to do better service load balancing?
-

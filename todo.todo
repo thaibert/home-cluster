@@ -1,0 +1,6 @@
+
+TODO: also run kube-vip as daemonset on worker nodes (in addition to the static pods in the controlplane) to do better service load balancing?
+  (Might also be nicer with MetalLB for load balancing services?)
+
+TODO: pin the versions used for different components. flux auto-updates on new bootstrap...
+
