@@ -20,7 +20,7 @@ spec:
       defaultDataLocality: strict-local
     defaultSettings:
       # Settings in longhorn-ui. (Only applies to fresh install; to change, edit directly in longhorn-ui).
-      createDefaultDiskLabeledNodes: true
+      createDefaultDiskLabeledNodes: false  # "true" would require a separate, unused disk.
       defaultReplicaCount: 1
       defaultDataLocality: strict-local
 
