@@ -33,11 +33,11 @@ spec:
         - name: TZ
           value: "Europe/Copenhagen"
         - name: JELLYFIN_DATA_DIR
-          value: "/cache/data"
+          value: "/config/data"
         - name: JELLYFIN_CONFIG_DIR
           value: "/config"
         - name: JELLYFIN_CACHE_DIR
-          value: "/cache/cache"
+          value: "/cache"
         - name: JELLYFIN_LOG_DIR
           value: "/log"
         - name: NVIDIA_DRIVER_CAPABILITIES  # necessary for enabling NVENC transcoding
