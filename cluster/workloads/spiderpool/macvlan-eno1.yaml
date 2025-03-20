@@ -1,0 +1,28 @@
+---
+apiVersion: spiderpool.spidernet.io/v2beta1
+kind: SpiderIPPool
+metadata:
+  name: ipv4-10-slash-8
+  namespace: kube-system
+spec:
+  disable: false
+  gateway: 10.0.0.1
+  ips:
+  - 10.42.0.1-10.42.255.250
+  subnet: 10.0.0.0/8
+
+---
+apiVersion: spiderpool.spidernet.io/v2beta1
+kind: SpiderMultusConfig
+metadata:
+  name: macvlan-eno1
+  namespace: kube-system
+spec:
+  cniType: macvlan
+  macvlan:
+    master:
+    - eno1
+    ippools:
+      ipv4:
+      - ipv4-10-slash-8
+    vlanID: 0
