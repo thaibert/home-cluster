@@ -1,3 +1,4 @@
+---
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -8,148 +9,71 @@ spec:
   chart:
     spec:
       chart: jellyfin
-      version: 9.5.3
+      version: 2.3.0
       sourceRef:
         kind: HelmRepository
-        name: k8s-at-home
+        name: jellyfin-helm
   interval: 2m
   values:
-# Stolen from https://raw.githubusercontent.com/k8s-at-home/charts/master/charts/stable/jellyfin/values.yaml
-# 
-# IMPORTANT NOTE
-#
-# This chart inherits from our common library chart. You can check the default values/options here:
-# https://github.com/k8s-at-home/library-charts/tree/main/charts/stable/common/values.yaml
-#
-
-    image:
-      repository: jellyfin/jellyfin
-      tag: 10.8.10
-      pullPolicy: IfNotPresent
-
     podAnnotations:
       k8s.v1.cni.cncf.io/networks: kube-system/macvlan-eno1
 
     resources:
       limits:
         nvidia.com/gpu: 1
+    deploymentStrategy:
+      type: Recreate  # delete old pods first to release gpu resources
 
-    env:
-      # JELLYFIN_HOSTWEBCLIENT: "false"  # TODO: serve jellyfin-web?
-      TZ: "Europe/Copenhagen"
-      JELLYFIN_DATA_DIR: "/data"
-      JELLYFIN_CONFIG_DIR: "/config"
-      JELLYFIN_CACHE_DIR: "/cache"
-      JELLYFIN_LOG_DIR: "/log"
-      JELLYFIN_PublishedServerUrl: "jellyfin.k8s.thaibert.com"
-      NVIDIA_DRIVER_CAPABILITIES: "all"  # necessary for enabling NVENC transcoding
-      NVIDIA_VISIBLE_DEVICES: "all"  # necessary for enabling NVENC transcoding
-#      DOMAIN_NAME: "served.on.domain.com"
+    jellyfin:
+      command: ["/bin/sh"]
+      args: ["-c", "mkdir -p /etc/OpenCL/vendors  &&  echo \"libnvidia-opencl.so.1\" > /etc/OpenCL/vendors/nvidia.icd  &&  ./jellyfin/jellyfin"]
+      env:
+        - name: JELLYFIN_HOSTWEBCLIENT
+          value: "true"  # TODO: serve jellyfin-vue frontend too?
+        - name: TZ
+          value: "Europe/Copenhagen"
+        - name: JELLYFIN_DATA_DIR
+          value: "/cache/data"
+        - name: JELLYFIN_CONFIG_DIR
+          value: "/config"
+        - name: JELLYFIN_CACHE_DIR
+          value: "/cache/cache"
+        - name: JELLYFIN_LOG_DIR
+          value: "/log"
+        - name: NVIDIA_DRIVER_CAPABILITIES  # necessary for enabling NVENC transcoding
+          value: "all"
+        - name: NVIDIA_VISIBLE_DEVICES  # necessary for enabling NVENC transcoding
+          value: "all"
 
     service:
-      main:
-        ports:
-          http: # TODO: deprecate the http-only port 8096
-            port: 8096
-            enabled: true
-          https:
-            port: 8920
-            enabled: true
-          svc-discvry:
-            port: 1900
-            protocol: UDP
-            enabled: true
-          client-discvry:
-            port: 7359
-            protocol: UDP
-            enabled: true
+      port: 8096
 
-# TODO healthchecks https://jellyfin.org/docs/general/networking/monitoring/
-
+    # TODO: healthchecks? https://jellyfin.org/docs/general/networking/monitoring/
 
     persistence:
-      # Jellyfin data (like temporary transcoded video files, which movies have been played, etc)
-      data:
-        enabled: true
-        type: "pvc"
-        accessMode: "ReadWriteOnce"
-        size: "20Gi"
-        mountPath: "/data"
-    
-      # Server config files
+      # Config files for how the application has been configured
       config:
+        # Implicitly mounted on /config
         enabled: true
-        type: "pvc"
-        size: "10Gi"
-        accessMode: "ReadWriteOnce"
-        mountPath: "/config"
- 
-      # Cache does NOT contain temporary transcoding data.
-      # It gets auto-cleared every 12 hours, apparently..
-      cache:
-        enabled: true
-        type: "emptyDir"
+        size: "5Gi"
+      media:
+        enabled: false
+
+    volumes:
+      - name: movies
+        nfs:
+          server: "10.0.0.3"
+          path: "/mnt/pool0/multimedia/clean"
+          readOnly: true
+      - name: cache
+        emptyDir: {}
+
+    volumeMounts:
+      - name: movies
+        mountPath: "/movies"
+      - name: cache
         mountPath: "/cache"
 
-      # Actual media :-)
-      media:
-        enabled: true
-        mountPath: "/media"
-        type: "custom"
-        accessMode: "ReadWriteMany"
-        readOnly: true
-        volumeSpec:
-          nfs:
-            server: "10.0.0.3"
-            path: "/mnt/pool0/multimedia/clean"
-      
-    command: ["/bin/sh"] 
-    args: ["-c", "mkdir -p /etc/OpenCL/vendors  &&  echo \"libnvidia-opencl.so.1\" > /etc/OpenCL/vendors/nvidia.icd  &&  ./jellyfin/jellyfin"]
-
-    podSecurityContext: {}
-#   runAsUser: 568
-#   runAsGroup: 568
-#   fsGroup: 568
-#   # Hardware acceleration using an Intel iGPU w/ QuickSync
-#   # These IDs below should be matched to your `video` and `render` group on the host
-#   # To obtain those IDs run the following grep statement on the host:
-#   # $ cat /etc/group | grep "video\|render"
-#   # video:x:44:
-#   # render:x:109:
-#   supplementalGroups:
-#   - 44
-#   - 109
-
-# resources:
-#   requests:
-#     # Hardware acceleration using an Intel iGPU w/ QuickSync and
-#     # using intel-gpu-plugin (https://github.com/intel/intel-device-plugins-for-kubernetes)
-#     gpu.intel.com/i915: 1
-#     cpu: 200m
-#     memory: 256Mi
-#   limits:
-#     # Hardware acceleration using an Intel iGPU w/ QuickSync and
-#     # using intel-gpu-plugin (https://github.com/intel/intel-device-plugins-for-kubernetes)
-#     gpu.intel.com/i915: 1
-#     memory: 4096Mi
-
-
----
-apiVersion: traefik.io/v1alpha1
-kind: IngressRouteUDP
-metadata:
-  name: jellyfin-server-client-discovery-local-network
-  namespace: jellyfin
-  annotations:
-    external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
-spec:
-  entryPoints:
-  - port7359udp
-  routes:
-  - services:
-      - name: jellyfin-server
-        # Info: clients seem to broadcast on 255.255.255.255:7359
-        port: 7359
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -160,38 +84,22 @@ metadata:
     external-dns.alpha.kubernetes.io/target: ingress.k8s.thaibert.com
 spec:
   entryPoints:
-  - intweb
-  - intwebsecure
-  - port8096tcp
+    - intweb
+    - intwebsecure
   routes:
-  - match: "Host(`jellyfin.k8s.thaibert.com`)"
-    kind: Rule
-    services:
-      - name: jellyfin-server
-        port: 8096
+    - match: "Host(`jellyfin.k8s.thaibert.com`)"
+      kind: Rule
+      services:
+        - name: jellyfin-server
+          port: 8096
+
 ---
-#apiVersion: "k8s.cni.cncf.io/v1"
-#kind: NetworkAttachmentDefinition
-#metadata:
-#  name: macvlan-conf
-#  namespace: jellyfin
-#spec:
-#  config: '{
-#      "cniVersion": "0.3.0",
-#      "type": "macvlan",
-#      "master": "eno1",
-#      "mode": "bridge",
-#      "ipam": {
-#        "type": "dhcp"
-#      }
-#    }'
-#---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: k8s-at-home
+  name: jellyfin-helm
   namespace: jellyfin
 spec:
   interval: 30m
-  url: https://k8s-at-home.com/charts/
+  url: https://jellyfin.github.io/jellyfin-helm
 

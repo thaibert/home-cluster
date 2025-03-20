@@ -70,12 +70,6 @@ spec:
         expose: true
         protocol: UDP
 
-      port8096tcp:
-        port: 8096
-        exposedPort: 8096
-        expose: true
-        protocol: TCP
-
     ingressRoute:
       dashboard:
         enabled: false
