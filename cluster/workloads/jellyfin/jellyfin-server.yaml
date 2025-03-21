@@ -28,7 +28,10 @@ spec:
       - name: setup-nvidia-driver-support
         image: alpine:20250108
         command: ["/bin/sh"]
-        args: ["-c", "mkdir -p /etc/OpenCL/vendors && echo 'libnvidia-opencl.so.1' > /etc/OpenCL/vendors/nvidia.icd"]
+        args: ["-c", "echo 'libnvidia-opencl.so.1' > /vendors/nvidia.icd"]
+        volumeMounts:
+          - name: etc-opencl-vendors
+            mountPath: "/vendors"
 
     jellyfin:
       env:
@@ -71,12 +74,16 @@ spec:
           readOnly: true
       - name: cache
         emptyDir: {}
+      - name: etc-opencl-vendors
+        emptyDir: {}
 
     volumeMounts:
       - name: movies
         mountPath: "/movies"
       - name: cache
         mountPath: "/cache"
+      - name: etc-opencl-vendors
+        mountPath: "/etc/OpenCL/vendors"
 
 ---
 apiVersion: traefik.io/v1alpha1
