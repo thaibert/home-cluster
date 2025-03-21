@@ -24,9 +24,13 @@ spec:
     deploymentStrategy:
       type: Recreate  # delete old pods first to release gpu resources
 
+    initContainers:
+      - name: setup-nvidia-driver-support
+        image: alpine:20250108
+        command: ["/bin/sh"]
+        args: ["-c", "mkdir -p /etc/OpenCL/vendors && echo 'libnvidia-opencl.so.1' > /etc/OpenCL/vendors/nvidia.icd"]
+
     jellyfin:
-      command: ["/bin/sh"]
-      args: ["-c", "mkdir -p /etc/OpenCL/vendors  &&  echo \"libnvidia-opencl.so.1\" > /etc/OpenCL/vendors/nvidia.icd  &&  ./jellyfin/jellyfin"]
       env:
         - name: JELLYFIN_HOSTWEBCLIENT
           value: "true"  # TODO: serve jellyfin-vue frontend too?
