@@ -1,5 +1,5 @@
 .PHONY: bootstrap-controlplane reset-nodes
-bootstrap-controlplane:
+bootstrap-cluster:
 	ansible-playbook bootstrap-cluster.playbook.yaml --inventory inventory.yaml --become-password-file=.password
 
 destroy-cluster:

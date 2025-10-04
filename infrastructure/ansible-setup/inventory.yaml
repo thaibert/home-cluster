@@ -19,7 +19,7 @@ controlplane_nodes:
     rest_of_the_controlplane_nodes:
 
 worker_nodes:
-  hosts: 
+  hosts:
     worker-1:
       ansible_host: 10.0.1.1
       interface: eno1
