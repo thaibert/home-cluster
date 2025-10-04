@@ -23,7 +23,10 @@ worker_nodes:
     worker-1:
       ansible_host: 10.0.1.1
       interface: eno1
-      nvidia_driver: nvidia-headless-565-server
+      nvidia_drivers:
+        - libnvidia-decode-565-server
+        - libnvidia-encode-565-server
+        - nvidia-headless-565-server
       node_labels:
         accelerator: nvidia-turing-t400
     worker-2:

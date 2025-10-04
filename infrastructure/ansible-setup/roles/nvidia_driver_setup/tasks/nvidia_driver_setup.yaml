@@ -1,10 +1,10 @@
-- name: "install nvidia-headless-server driver"
+- name: "install nvidia drivers and libraries"
   become: true
   block:
     - ansible.builtin.apt:
         update_cache: true
     - ansible.builtin.apt:
-        pkg: [ "{{ nvidia_driver }}" ]
+        pkg: "{{ nvidia_drivers }}"
     - ansible.builtin.reboot:
 
 - name: "install nvidia-container-toolkit"

@@ -77,7 +77,7 @@
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
   hosts: worker_nodes
   tasks:
-      - when: nvidia_driver is defined
+      - when: nvidia_drivers is defined
         import_role:
           name: nvidia_driver_setup
           tasks_from: nvidia_driver_setup.yaml
