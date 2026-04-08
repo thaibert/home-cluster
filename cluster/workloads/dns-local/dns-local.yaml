@@ -14,7 +14,7 @@ spec:
   chart:
     spec:
       chart: powerdns
-#      version:
+      version: 1.1.1
       sourceRef:
         kind: HelmRepository
         name: puckpuck
