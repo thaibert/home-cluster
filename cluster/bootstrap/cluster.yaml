@@ -104,14 +104,32 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: spiderpool
+  name: spiderpool-system
   namespace: flux-system
 spec:
   interval: 5m0s
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: cluster/workloads/spiderpool
+  path: cluster/workloads/spiderpool/spiderpool-system
+  prune: true
+  wait: true
+  timeout: 5m0s
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: spiderpool-config
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: spiderpool-system
+  interval: 5m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: cluster/workloads/spiderpool/spiderpool-config
   prune: true
   wait: true
   timeout: 5m0s
