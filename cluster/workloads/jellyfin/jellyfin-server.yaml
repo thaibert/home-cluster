@@ -18,6 +18,8 @@ spec:
     podAnnotations:
       k8s.v1.cni.cncf.io/networks: kube-system/macvlan-eno1
 
+    securityContext:
+      privileged: true  # seems necessary to allow dlopen'ing libcuda.so.1?
     resources:
       limits:
         nvidia.com/gpu: 1
