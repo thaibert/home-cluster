@@ -12,7 +12,7 @@
           register: kubeadm_bootstrap_token
           ansible.builtin.shell: |
             kubeadm token generate
-    
+
     - name: "set necessary variables"
       delegate_to: localhost
       delegate_facts: true

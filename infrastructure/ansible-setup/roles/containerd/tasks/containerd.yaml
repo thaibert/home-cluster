@@ -8,10 +8,10 @@
     - name: "add repository"
       # TODO: replace "noble" with actual, current codename
       # (see https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-      ansible.builtin.apt_repository: 
+      ansible.builtin.apt_repository:
         repo: 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable'
         state: present
-  
+
 - name: "sudo apt update"
   become: true
   ansible.builtin.apt:

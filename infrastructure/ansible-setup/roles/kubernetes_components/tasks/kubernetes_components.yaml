@@ -30,7 +30,7 @@
   ansible.builtin.service:
     name: kubelet
     enabled: yes
-  
+
 - name: "sudo apt-mark hold <...>"
   become: true
   block:

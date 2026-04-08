@@ -57,7 +57,7 @@
 - name: "generate kubeadm discovery-token-ca-cert-hash"
   run_once: true
   block:
-    - name: 
+    - name:
       become: true
       register: generate_discovery_token_ca_cert_hash
       ansible.builtin.shell: |
