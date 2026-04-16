@@ -107,7 +107,6 @@ metadata:
   name: spiderpool-config
   namespace: flux-system
 spec:
-  dependsOn:
   interval: 5m0s
   sourceRef:
     kind: GitRepository
