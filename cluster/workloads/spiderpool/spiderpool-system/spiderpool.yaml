@@ -18,9 +18,12 @@ spec:
       mode: overlay
     plugins:
       installCNI: true
-#    spiderpoolController:
-#      debug:
-#        logLevel: debug
+    spiderpoolController:
+      debug:
+        logLevel: debug
+    spiderpoolAgent:
+      debug:
+        logLevel: debug
 #      hostnetwork: false
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
