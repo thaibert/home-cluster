@@ -70,39 +70,60 @@
       ansible.builtin.set_fact:
         discovery_token_ca_cert_hash: sha256:{{ generate_discovery_token_ca_cert_hash.stdout }}
 
+- name: "download helm"
+  become: true
+  block:
+    - name: "download armored gpg key"
+      ansible.builtin.get_url:
+        url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+        dest: /etc/apt/keyrings/helm.asc
+    - name: "add repository"
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/helm.asc] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main"
+        state: present
+    - ansible.builtin.apt:
+        update_cache: true
+    - ansible.builtin.apt:
+        pkg: [ helm ]
+
 - name: "install cilium cni"
   become: true
   block:
-    - name: "download helm"
-      block:
-        - name: "download armored gpg key"
-          ansible.builtin.get_url:
-            url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
-            dest: /etc/apt/keyrings/helm.asc
-        - name: "add repository"
-          ansible.builtin.apt_repository:
-            repo: "deb [signed-by=/etc/apt/keyrings/helm.asc] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main"
-            state: present
-        - ansible.builtin.apt:
-            update_cache: true
-        - ansible.builtin.apt:
-            pkg: [ helm ]
-    - name: "install cilium"
-      block:
-        - ansible.builtin.set_fact:
-            cilium_valuesfile: /tmp/cilium.values.yaml
-        - name: "place cilium valuesfile on target node"
-          ansible.builtin.copy:
-            src: "{{ inventory_dir }}/resources/cilium.values.yaml"
-            dest: "{{ cilium_valuesfile }}"
-        - name: "helm install"
-          kubernetes.core.helm:
-            release_name: cilium
-            chart_version: 1.17.1
-            release_namespace: kube-system
-            values_files:
-              - "{{ cilium_valuesfile }}"
-            chart_repo_url: https://helm.cilium.io
-            chart_ref: cilium
-            atomic: true
-            kubeconfig: /etc/kubernetes/admin.conf
+    - ansible.builtin.set_fact:
+        cilium_valuesfile: /tmp/cilium.values.yaml
+    - name: "place cilium valuesfile on target node"
+      ansible.builtin.copy:
+        src: "{{ inventory_dir }}/resources/cilium.values.yaml"
+        dest: "{{ cilium_valuesfile }}"
+    - name: "helm install"
+      kubernetes.core.helm:
+        release_name: cilium
+        chart_version: 1.17.1
+        release_namespace: kube-system
+        values_files:
+          - "{{ cilium_valuesfile }}"
+        chart_repo_url: https://helm.cilium.io
+        chart_ref: cilium
+        atomic: true
+        kubeconfig: /etc/kubernetes/admin.conf
+
+- name: "install spiderpool"
+  become: true
+  block:
+    - ansible.builtin.set_fact:
+        spiderpool_valuesfile: /tmp/spiderpool.values.yaml
+    - name: "place spiderpool valuesfile on target node"
+      ansible.builtin.copy:
+        src: "{{ inventory_dir }}/resources/spiderpool.values.yaml"
+        dest: "{{ spiderpool_valuesfile }}"
+    - name: "helm install"
+      kubernetes.core.helm:
+        release_name: spiderpool
+        chart_version: 1.0.1
+        release_namespace: kube-system
+        values_files:
+          - "{{ spiderpool_valuesfile }}"
+        chart_repo_url: https://spidernet-io.github.io/spiderpool
+        chart_ref: spiderpool
+        atomic: true
+        kubeconfig: /etc/kubernetes/admin.conf

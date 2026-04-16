@@ -1,0 +1,10 @@
+coordinator:
+  mode: overlay
+plugins:
+  installCNI: true
+#spiderpoolController:
+#  debug:
+#    logLevel: debug
+#spiderpoolAgent:
+#  debug:
+#    logLevel: debug

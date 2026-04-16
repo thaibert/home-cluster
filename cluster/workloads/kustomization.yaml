@@ -7,5 +7,5 @@ resources:
   - kube-vip-cloud-provider
   - longhorn
   - nvidia-device-plugin
-  - spiderpool
+  - spiderpool-config
   - traefik
