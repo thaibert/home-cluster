@@ -16,6 +16,10 @@ kind: InitConfiguration
 certificateKey: "{{ hostvars.localhost.certificate_key }}"
 bootstrapTokens:
   - token: "{{ hostvars.localhost.bootstrap_token }}"
+nodeRegistration:
+  kubeletExtraArgs:
+    - name: "node-ip"
+      value: {{ ansible_host }}
 {% else %}
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: JoinConfiguration
@@ -25,6 +29,10 @@ discovery:
     apiServerEndpoint: "{{ controlplane_vip }}:6443"
     caCertHashes:
       - "{{ hostvars.localhost.discovery_token_ca_cert_hash }}"
+nodeRegistration:
+  kubeletExtraArgs:
+    - name: "node-ip"
+      value: {{ ansible_host }}
 {% if "controlplane_nodes" in group_names %}
 controlPlane:
   certificateKey: "{{ hostvars.localhost.certificate_key }}"

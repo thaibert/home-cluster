@@ -32,8 +32,15 @@
           import_role:
             name: common_cluster_node
             tasks_from: clean_slate.yaml
-        - name: "rm -r /etc/cni"
-          ansible.builtin.file:
-            path: /etc/cni
-            state: absent
+        - name: "clean up CNI setup"
+          block:
+            - ansible.builtin.file:
+                path: /etc/cni
+                state: absent
+            - ansible.builtin.file:
+                path: /opt/cni/bin
+                state: absent
           become: true
+        - name: "reboot all machines"
+          become: true
+          ansible.builtin.reboot:

@@ -54,24 +54,21 @@
 
 - name: Common post-setup operations
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  vars_prompt:
+    - name: github_personal_access_token
+      prompt: "Enter Github PAT..."
+      private: true
   hosts: controlplane_nodes,worker_nodes
   tasks:
       - import_role:
           name: post_setup
           tasks_from: post_setup.yaml
-
-- name: Install fluxcd
-  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
-  vars_prompt:
-    - name: github_personal_access_token
-      prompt: "Enter Github PAT..."
-      private: true
-  hosts: controlplane_nodes
-  tasks:
-    - import_role:
-        name: install_flux
-        tasks_from: install_flux.yaml
-      run_once: true
+      - import_role:
+          name: post_setup
+          tasks_from: install_spiderpool.yaml
+      - import_role:
+          name: post_setup
+          tasks_from: install_flux.yaml
 
 - name: Setup nvidia drivers and assorted bits
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]

@@ -4,3 +4,18 @@ TODO: also run kube-vip as daemonset on worker nodes (in addition to the static 
 
 TODO: pin the versions used for different components. flux auto-updates on new bootstrap...
 
+
+TODO: run nvidia gpu-feature-discovery to avoid having to manually label gpu node?
+
+
+TODO: metrics-server
+
+TODO: spiderpool's "spiderpool-multus-entrypoint" cm constructs a bad kubeconfig
+  (in a new-enough kubernetes built with a new-enough go)
+  (e.g. https://github.com/projectcalico/calico/pull/11713 in calico)
+    (which linked to https://github.com/golang/go/issues/75678)
+
+
+TODO: inspect the "update OS"/"reboot node" controllers for k8s?
+
+

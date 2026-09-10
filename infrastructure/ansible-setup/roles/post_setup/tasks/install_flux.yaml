@@ -1,12 +1,12 @@
 - name: Install fluxcd
   run_once: true
+  delegate_to: "{{ groups.controlplane_nodes[0] }}" # the first controlplane node will have had "helm" installed
+  become: true
   block:
     - name: install flux cli
-      become: true
       ansible.builtin.shell: |
         curl -s https://raw.githubusercontent.com/fluxcd/flux2/main/install/flux.sh | sudo bash
     - name: bootstrap flux
-      become: true
       environment:
         GITHUB_TOKEN: "{{ github_personal_access_token }}"
       ansible.builtin.shell: |
