@@ -1,0 +1,22 @@
+- name: "install cilium cni"
+  run_once: true
+  delegate_to: "{{ groups.controlplane_nodes[0] }}" # the first controlplane node will have had "helm" installed
+  become: true
+  block:
+    - ansible.builtin.set_fact:
+        cilium_valuesfile: /tmp/cilium.values.yaml
+    - name: "place cilium valuesfile on target node"
+      ansible.builtin.copy:
+        src: "{{ inventory_dir }}/resources/cilium.values.yaml"
+        dest: "{{ cilium_valuesfile }}"
+    - name: "helm install"
+      ansible.builtin.shell:
+        cmd: >
+          helm upgrade --install
+          cilium
+          cilium
+          --repo https://helm.cilium.io
+          --version 1.17.1
+          --values "{{ cilium_valuesfile }}"
+          --namespace kube-system
+          --kubeconfig /etc/kubernetes/admin.conf

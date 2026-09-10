@@ -86,23 +86,3 @@
     - ansible.builtin.apt:
         pkg: [ helm ]
 
-- name: "install cilium cni"
-  become: true
-  block:
-    - ansible.builtin.set_fact:
-        cilium_valuesfile: /tmp/cilium.values.yaml
-    - name: "place cilium valuesfile on target node"
-      ansible.builtin.copy:
-        src: "{{ inventory_dir }}/resources/cilium.values.yaml"
-        dest: "{{ cilium_valuesfile }}"
-    - name: "helm install"
-      kubernetes.core.helm:
-        release_name: cilium
-        chart_version: 1.17.1
-        release_namespace: kube-system
-        values_files:
-          - "{{ cilium_valuesfile }}"
-        chart_repo_url: https://helm.cilium.io
-        chart_ref: cilium
-        atomic: true
-        kubeconfig: /etc/kubernetes/admin.conf

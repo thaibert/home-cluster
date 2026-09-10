@@ -10,14 +10,13 @@
         src: "{{ inventory_dir }}/resources/spiderpool.values.yaml"
         dest: "{{ spiderpool_valuesfile }}"
     - name: "helm install"
-      kubernetes.core.helm:
-        release_name: spiderpool
-        chart_version: 1.0.1
-        release_namespace: kube-system
-        values_files:
-          - "{{ spiderpool_valuesfile }}"
-        chart_repo_url: https://spidernet-io.github.io/spiderpool
-        chart_ref: spiderpool
-        atomic: true
-        kubeconfig: /etc/kubernetes/admin.conf
-
+      ansible.builtin.shell:
+        cmd: >
+          helm upgrade --install
+          spiderpool
+          spiderpool
+          --repo https://spidernet-io.github.io/spiderpool
+          --version 1.0.1
+          --values "{{ spiderpool_valuesfile }}"
+          --namespace kube-system
+          --kubeconfig /etc/kubernetes/admin.conf

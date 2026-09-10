@@ -52,7 +52,30 @@
           name: join_worker_nodes
           tasks_from: join_worker_nodes.yaml
 
-- name: Common post-setup operations
+- name: Set up network infrastructure components
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: controlplane_nodes,worker_nodes
+  tasks:
+      - import_role:
+          name: post_setup
+          tasks_from: install_cilium.yaml
+      - import_role:
+          name: post_setup
+          tasks_from: install_spiderpool.yaml
+
+- name: Do necessary post-setup things
+  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
+  hosts: controlplane_nodes,worker_nodes
+  tasks:
+      - import_role:
+          name: post_setup
+          tasks_from: post_setup.yaml
+      - when: nvidia_drivers is defined
+        import_role:
+          name: nvidia_driver_setup
+          tasks_from: nvidia_driver_setup.yaml
+
+- name: Install flux
   vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
   vars_prompt:
     - name: github_personal_access_token
@@ -62,19 +85,4 @@
   tasks:
       - import_role:
           name: post_setup
-          tasks_from: post_setup.yaml
-      - import_role:
-          name: post_setup
-          tasks_from: install_spiderpool.yaml
-      - import_role:
-          name: post_setup
           tasks_from: install_flux.yaml
-
-- name: Setup nvidia drivers and assorted bits
-  vars_files: [ "{{ playbook_dir }}/vars.yaml" ]
-  hosts: worker_nodes
-  tasks:
-      - when: nvidia_drivers is defined
-        import_role:
-          name: nvidia_driver_setup
-          tasks_from: nvidia_driver_setup.yaml
