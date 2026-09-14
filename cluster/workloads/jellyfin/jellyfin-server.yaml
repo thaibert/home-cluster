@@ -63,8 +63,14 @@ spec:
       - name: movies
         nfs:
           server: "10.0.0.3"
-          path: "/mnt/pool0/multimedia/clean"
+          path: "/mnt/pool0/multimedia/clean/Movies"
           readOnly: true
+      - name: tv-shows
+        nfs:
+          server: "10.0.0.3"
+          path: "/mnt/pool0/multimedia/clean/Tv"
+          readOnly: true
+
       - name: data-dir
         persistentVolumeClaim:
           claimName: jellyfin-data-dir
@@ -83,6 +89,8 @@ spec:
     volumeMounts:
       - name: movies
         mountPath: "/movies"
+      - name: tv-shows
+        mountPath: "/tv"
 
       - name: data-dir
         mountPath: "/jf-data"
