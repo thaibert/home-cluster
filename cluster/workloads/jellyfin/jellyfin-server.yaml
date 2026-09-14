@@ -21,6 +21,8 @@ spec:
     runtimeClassName: nvidia
     securityContext:
       privileged: true  # seems necessary to allow dlopen'ing libcuda.so.1?
+    podSecurityContext:
+      fsGroup: 2100 # nfs-media-readonly
     resources:
       limits:
         nvidia.com/gpu: 1
