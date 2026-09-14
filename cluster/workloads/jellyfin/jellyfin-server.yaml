@@ -34,13 +34,13 @@ spec:
         - name: TZ
           value: "Europe/Copenhagen"
         - name: JELLYFIN_DATA_DIR
-          value: "/config/data"
+          value: "/jf-data"
         - name: JELLYFIN_CONFIG_DIR
-          value: "/config"
+          value: "/jf-config"
         - name: JELLYFIN_CACHE_DIR
-          value: "/cache"
+          value: "/jf-cache"
         - name: JELLYFIN_LOG_DIR
-          value: "/log"
+          value: "/jf-log"
         - name: NVIDIA_DRIVER_CAPABILITIES  # necessary for enabling NVENC transcoding
           value: "all"
         - name: NVIDIA_VISIBLE_DEVICES  # necessary for enabling NVENC transcoding
@@ -52,12 +52,11 @@ spec:
     # TODO: healthchecks? https://jellyfin.org/docs/general/networking/monitoring/
 
     persistence:
-      # Config files for how the application has been configured
-      config:
-        # Implicitly mounted on /config
-        enabled: true
-        size: "5Gi"
-      media:
+      config: # /config
+        enabled: false
+      media: # /media
+        enabled: false
+      cache: # /cache
         enabled: false
 
     volumes:
@@ -66,8 +65,17 @@ spec:
           server: "10.0.0.3"
           path: "/mnt/pool0/multimedia/clean"
           readOnly: true
-      - name: cache
+      - name: data-dir
+        persistentVolumeClaim:
+          claimName: jellyfin-data-dir
+      - name: config-dir
+        persistentVolumeClaim:
+          claimName: jellyfin-config-dir
+      - name: cache-dir
         emptyDir: {}
+      - name: log-dir
+        emptyDir: {}
+
       - name: etc-opencl-vendors
         configMap:
           name: etc-opencl-vendors
@@ -75,8 +83,16 @@ spec:
     volumeMounts:
       - name: movies
         mountPath: "/movies"
-      - name: cache
-        mountPath: "/cache"
+
+      - name: data-dir
+        mountPath: "/jf-data"
+      - name: config-dir
+        mountPath: "/jf-config"
+      - name: cache-dir
+        mountPath: "/jf-cache"
+      - name: log-dir
+        mountPath: "/jf-log"
+
       - name: etc-opencl-vendors
         mountPath: "/etc/OpenCL/vendors/nvidia.icd"
         subPath: nvidia.icd
