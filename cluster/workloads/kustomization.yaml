@@ -9,3 +9,4 @@ resources:
   - nvidia-device-plugin
   - spiderpool-config
   - traefik
+  - media

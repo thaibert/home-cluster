@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: medialinker-job
+  namespace: media
+spec:
+  #schedule: "* * * * *" # every minute
+  schedule: "@hourly"
+  concurrencyPolicy: Forbid # only one Job at a time
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 2000 # nfs-media-rw
+            fsGroup: 2000 # nfs-media-rw
+          containers:
+            - name: medialinker-movies
+              image: ghcr.io/thaibert/medialinker:latest  # TODO not latest
+              args:
+                - /media/dirty/movies=/media/clean/Movies
+              volumeMounts:
+                - mountPath: /media
+                  name: media-from-nfs
+            - name: medialinker-tv
+              image: ghcr.io/thaibert/medialinker:latest  # TODO not latest
+              args:
+                - /media/dirty/tv=/media/clean/Tv
+              volumeMounts:
+                - mountPath: /media
+                  name: media-from-nfs
+          volumes:
+            - name: media-from-nfs
+              nfs:
+                server: "10.0.0.3"
+                path: "/mnt/pool0/multimedia"
